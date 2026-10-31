@@ -128,4 +128,18 @@ void main() {
 
     await expectLater(api.get('/orders'), throwsA(isA<NetworkFailure>()));
   });
+
+  test('300 ya no es éxito y lanza UnexpectedFailure', () async {
+    final mock = MockClient((request) async {
+      return respuestaJson({'detail': 'Multiple Choices'}, 300);
+    });
+    final api = crearCliente(mock);
+
+    await expectLater(
+      api.get('/orders'),
+      throwsA(
+        isA<UnexpectedFailure>().having((f) => f.statusCode, 'statusCode', 300),
+      ),
+    );
+  });
 }

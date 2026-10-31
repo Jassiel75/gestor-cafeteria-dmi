@@ -53,7 +53,7 @@ class ApiClient {
     }
     final json = _tryDecode(response);
     final code = response.statusCode;
-    if (code >= 200 && code <= 300) return json;
+    if (code >= 200 && code < 300) return json;
     throw switch (code) {
       404 => NotFoundFailure(_detalle(json)),
       409 => ConflictFailure(_detalle(json)),
