@@ -59,6 +59,7 @@ class ApiClient {
     throw switch (code) {
       404 => NotFoundFailure(_detalle(json)),
       409 => ConflictFailure(_detalle(json)),
+      422 => ValidationFailure(_campos(json)),
       >= 500 && <= 599 => ServerFailure(code),
       _ => UnexpectedFailure(code, _detalle(json)),
     };
@@ -67,6 +68,18 @@ class ApiClient {
   String _detalle(dynamic json) {
     if (json is Map && json['detail'] is String) return json['detail'];
     return 'Error inesperado del servidor';
+  }
+
+  Map<String, String> _campos(dynamic json) {
+    final campos = <String, String>{};
+    if (json is Map && json['detail'] is List) {
+      for (final error in json['detail']) {
+        if (error is Map && error['loc'] is List && error['loc'].length > 1) {
+          campos['${error['loc'][1]}'] = '${error['msg']}';
+        }
+      }
+    }
+    return campos;
   }
 
   dynamic _tryDecode(http.Response response) {
